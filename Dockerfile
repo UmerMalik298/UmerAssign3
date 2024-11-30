@@ -1,41 +1,22 @@
-pipeline {
-    agent any
-    environment {
-        IMAGE_NAME = "umer23672@gmail.com/WebApplication1:latest"
-    }
-    stages {
-        stage('Checkout Code') {
-            steps {
-                // Clone the repository from GitHub
-                git branch: 'main', url: 'https://github.com/UmerMalik298/UmerAssign3.git'
-            }
-        }
-        stage('Build Docker Image') {
-            steps {
-                // Build the Docker image
-                script {
-                    docker.build("$webapplication1:latest}")
-                }
-            }
-        }
-        stage('Run Application') {
-            steps {
-                // Run the application using Docker
-                script {
-                    docker.image("${webapplication1:latest}").run('-d -p 8080:80')
-                }
-            }
-        }
-        stage('Clean Up') {
-            steps {
-                // Optional: Clean up old containers and images
-                sh 'docker system prune -f'
-            }
-        }
-    }
-    post {
-        always {
-            echo 'Pipeline completed!'
-        }
-    }
-}
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /app
+
+# Copy the project files
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy the rest of the files and build the app
+COPY . ./
+RUN dotnet publish -c Release -o /out
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+# Copy the published output from the build stage
+COPY --from=build /out .
+
+# Expose the port and run the application
+EXPOSE 80
+ENTRYPOINT ["dotnet", "WebApplication1.dll"]
