@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = "umer23672@gmail.com/WebApplication1"
+        IMAGE_NAME = "umer23672@gmail.com/WebApplication1:latest"
     }
     stages {
         stage('Checkout Code') {
@@ -14,7 +14,7 @@ pipeline {
             steps {
                 // Build the Docker image
                 script {
-                    docker.build("${IMAGE_NAME}")
+                    docker.build("$webapplication1:latest}")
                 }
             }
         }
@@ -22,7 +22,7 @@ pipeline {
             steps {
                 // Run the application using Docker
                 script {
-                    docker.image("${IMAGE_NAME}").run('-d -p 8080:80')
+                    docker.image("${webapplication1:latest}").run('-d -p 8080:80')
                 }
             }
         }
