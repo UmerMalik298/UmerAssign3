@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = "umer23672@gmail.com/WebApplication1:latest"
+        IMAGE_NAME = "umer23672@gmail.com/webapplication1:latest" // Corrected image name format
     }
     stages {
         stage('Checkout Code') {
@@ -14,7 +14,7 @@ pipeline {
             steps {
                 // Build the Docker image
                 script {
-                    docker.build("$webapplication1:latest}")
+                    docker.build("${IMAGE_NAME}")
                 }
             }
         }
@@ -22,7 +22,7 @@ pipeline {
             steps {
                 // Run the application using Docker
                 script {
-                    docker.image("${webapplication1:latest}").run('-d -p 8080:80')
+                    docker.image("${IMAGE_NAME}").run('-d -p 8080:80')
                 }
             }
         }
