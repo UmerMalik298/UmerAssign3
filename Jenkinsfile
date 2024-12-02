@@ -1,41 +1,47 @@
 pipeline {
     agent any
+    
     environment {
-        IMAGE_NAME = "umer23672@gmail.com/webapplication1:latest" // Corrected image name format
+        DOCKER_IMAGE = 'your-dockerhub-username/your-app-name'
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
     }
+    
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                // Clone the repository from GitHub
-                git branch: 'main', url: 'https://github.com/UmerMalik298/UmerAssign3.git'
+                checkout scm
             }
         }
-        stage('Build Docker Image') {
+        
+        stage('Build') {
             steps {
-                // Build the Docker image
+                sh 'dotnet restore'
+                sh 'dotnet build --configuration Release'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh 'dotnet test'
+            }
+        }
+        
+        stage('Docker Build') {
+            steps {
                 script {
-                    docker.build("${IMAGE_NAME}")
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                 }
             }
         }
-        stage('Run Application') {
+        
+        stage('Deploy') {
             steps {
-                // Run the application using Docker
                 script {
-                    docker.image("${IMAGE_NAME}").run('-d -p 8080:80')
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                    }
                 }
             }
-        }
-        stage('Clean Up') {
-            steps {
-                // Optional: Clean up old containers and images
-                sh 'docker system prune -f'
-            }
-        }
-    }
-    post {
-        always {
-            echo 'Pipeline completed!'
         }
     }
 }
